@@ -1,0 +1,2 @@
+# Abstruct
+To study Rust and Swift, I have decided to create an application called "Job Divide" that divides goals into small tasks, helping users progress step by step. f the application sends users a text that achieves its purpose, it sets goals and divides them into small tasks. It reminds users to progress through tasks step by step. It also reduces goals and tasks that are unnecessary for users.
