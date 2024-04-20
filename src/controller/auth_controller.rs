@@ -1,5 +1,5 @@
-use actix_web::{web, HttpResponse, Responder};
-use crate::model::user::User;
+use actix_web::web;
+use actix_web::{HttpResponse, Responder};
 use crate::usecase::auth_usecase::AuthUsecase;
 use crate::request::register_request::RegisterRequest;
 
@@ -15,23 +15,19 @@ impl AuthController {
     // こちらユーザを引数に放り込んだほうが良いだろう
     pub async fn register(
         &self,
-        web::Json(req): web::Json<RegisterRequest>,
+        web::Json(req): web::Json<RegisterRequest>
     ) -> impl Responder {
-        let hashed_password = match self.auth_usecase.hash_password(&req.password) {
-            Ok(hashed_password) => hashed_password,
-            Err(e) => {
-                return HttpResponse::InternalServerError().finish();
-            }
-        };
-
-        let id = 1;
-        let user = User::new(id, &req.name, &req.email, &hashed_password);
-
-        HttpResponse::Ok().json(user)
+        let result = self.auth_usecase.register(&req.name, &req.email, &req.password).await;
+        HttpResponse::Ok().json(req)
+        
+        // match result {
+        //     Ok(user) => HttpResponse::Ok().json(user),
+        //     Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
+        // }
     }
 
     pub fn login(&self, password: &str, password_hash: &str) -> Result<bool, argon2::password_hash::Error> {
-        let is_valid = self.auth_usecase.verify_password(password, password_hash)?;
+        let is_valid = self.auth_usecase.verify_password(password, password_hash);
 
         Ok(is_valid)
     }
