@@ -4,3 +4,7 @@ pub mod controller;
 pub mod request;
 pub mod routes;
 pub mod response;
+pub mod repository;
+pub mod db;
+pub mod schema;
+pub mod error;

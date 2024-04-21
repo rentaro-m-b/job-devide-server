@@ -5,26 +5,52 @@ use argon2::{
     },
     Argon2
 };
+use crate::{
+    model::user::User,
+    repository::user_repository::UserRepository
+};
 
 pub struct AuthUsecase {
-    argon2: Argon2<'static>
+    user_repository: UserRepository
 }
 
 impl AuthUsecase {
-    pub fn new() -> Self {
+    pub fn new(user_repository: UserRepository) -> Self {
+        AuthUsecase{ 
+            user_repository
+        }
+    }
+
+    pub async fn register(&self, name: &str, email: &str, password: &str) -> bool {
+        let hashed_password = self.hash_password(password).await;
+        let new_user = User::new(name, email, &hashed_password);
+        self.user_repository.create_user(&new_user)
+    }
+
+    pub async fn hash_password(&self, password: &str) -> String {
         let argon2 = Argon2::default();
-
-        AuthUsecase{ argon2 }
-    }
-
-    pub fn hash_password(&self, password: &str) -> Result<String, argon2::password_hash::Error> {
         let salt = SaltString::generate(&mut OsRng);
-        let password_hash = self.argon2.hash_password(password.as_bytes(), &salt)?;
-        Ok(password_hash.to_string())
+        let hashed_result = argon2.hash_password(password.as_bytes(), &salt)
+            .map(|hash| hash.to_string());
+
+        // have not written error handling
+        match hashed_result {
+            Ok(hashed_password) => hashed_password,
+            Err(e) => {
+                "".to_string()
+            }
+        }
     }
 
-    pub fn verify_password(&self, password: &str, password_hash: &str) -> Result<bool, argon2::password_hash::Error> {
-        let parsed_hash = PasswordHash::new(password_hash)?;
-        Ok(self.argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok())
+    pub fn verify_password(&self, password: &str, password_hash: &str) -> bool {
+        let argon2 = Argon2::default();
+        let parsed_result = PasswordHash::new(password_hash);
+        
+        match parsed_result {
+            Ok(parsed_hash) => argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok(),
+            Err(e) => {
+                false
+            }
+        }
     }
 }

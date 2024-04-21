@@ -1,24 +1,29 @@
 use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
+use diesel::Insertable;
+use diesel::AsChangeset;
+use diesel::Queryable;
+use diesel::Selectable;
+use crate::schema::users;
 
-// とりあえず、このようにユーザを定義する。idはusizeで良いよな？uusizeとかないのかな？まあ、何が良いのかわかっていないのだけど
-// これをなんとなしに登録処理に突っ込もうとしていたけど、リクエストを受け取るデータの構造体を定義してそれを使うのが基本だよな
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Queryable, Insertable, Selectable, AsChangeset, Debug, Serialize, Deserialize)]
+#[diesel(table_name = users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
-    id: usize,
-    name: String,
-    email: String,
-    password_hash: String,
-    created_at: NaiveDateTime,
-    updated_at: NaiveDateTime,
+    pub id: i32,
+    pub name: String,
+    pub email: String,
+    pub password_hash: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 impl User {
-    pub fn new(id: usize, name: &str, email: &str, password_hash: &str) -> Self {
+    pub fn new(name: &str, email: &str, password_hash: &str) -> Self {
         let now = Utc::now().naive_utc();
 
         User {
-            id: id,
+            id: 0,
             name: name.to_string(),
             email: email.to_string(),
             password_hash: password_hash.to_string(),
