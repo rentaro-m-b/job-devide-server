@@ -8,13 +8,13 @@ build:
 # 起動
 up:
 	docker compose up -d --wait --build
-	sleep 5
 
 # Dieselマイグレーション
 migrate:
 	docker compose exec app diesel migration run
 	docker compose exec app diesel print-schema > src/schema.rs
 
-all: build up migrate
+all: build up
 
-.PHONY: build up migrate all
+.PHONY: build up all
+https://github.com/yumemi/bspoc-backend/blob/main/docker-compose.yml#L24-L29

@@ -10,6 +10,7 @@ RUN cargo install diesel_cli --no-default-features --features postgres
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
 
+# debug用のファイルがあると（分けると）開発しやすい（ビルド時間短縮）
 RUN cargo build --release
 
 EXPOSE 8080
