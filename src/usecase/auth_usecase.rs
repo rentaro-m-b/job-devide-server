@@ -6,7 +6,7 @@ use argon2::{
     Argon2
 };
 use crate::{
-    model::user::User,
+    model::user::{NewUser, User},
     repository::user_repository::UserRepository
 };
 
@@ -23,7 +23,7 @@ impl AuthUsecase {
 
     pub async fn register(&self, name: &str, email: &str, password: &str) -> bool {
         let hashed_password = self.hash_password(password).await;
-        let new_user = User::new(name, email, &hashed_password);
+        let new_user = NewUser::new(name, email, &hashed_password);
         self.user_repository.create_user(&new_user)
     }
 

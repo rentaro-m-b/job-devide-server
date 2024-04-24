@@ -13,6 +13,7 @@ pub fn get_connection_pool() -> DbPool {
 
     let db_pool_max_size_string = &env::var("DB_POOL_MAX_SIZE").unwrap_or("5".to_string());
     let db_pool_max_size: u32 = db_pool_max_size_string.parse().unwrap();
+    
     Pool::builder()
         .test_on_check_out(true)
         .max_size(db_pool_max_size)

@@ -18,6 +18,7 @@ impl AuthController {
         web::Json(req): web::Json<RegisterRequest>
     ) -> impl Responder {
         let result = self.auth_usecase.register(&req.name, &req.email, &req.password).await;
+        println!("register {}", result);
         HttpResponse::Ok().json(req)
         
         // match result {
