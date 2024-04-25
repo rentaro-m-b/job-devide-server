@@ -1,8 +1,8 @@
 use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, Pool};
 use crate::db::DbPool;
 use crate::model::user::{NewUser, User};
 use crate::schema::users;
+use crate::schema::users::dsl::*;
 
 pub struct UserRepository {
     pub pool: DbPool,
@@ -13,13 +13,18 @@ impl UserRepository {
         UserRepository{ pool }
     }
 
-    pub fn create_user(&self, user: &NewUser) -> bool {
+    pub fn create_user(&self, user: &NewUser) {
         let mut conn = self.pool.get().expect("Failed to get db connection from pool");
         println!("create_user");
-        diesel::insert_into(users::table)
+        let _ = diesel::insert_into(users::table)
             .values(user)
-            .returning(User::as_returning())
-            .get_result(&mut conn)
-            .is_ok()
+            .execute(&mut conn);
+    }
+
+    pub fn find_user_by_email(&self, user_email: &str) -> Option<User> {
+        let mut conn = self.pool.get().expect("Failed to get db connection from pool");
+        users.filter(email.eq(user_email))
+            .first::<User>(&mut conn)
+            .ok()
     }
 }

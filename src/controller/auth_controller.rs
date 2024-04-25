@@ -1,7 +1,9 @@
 use actix_web::web;
 use actix_web::{HttpResponse, Responder};
+use crate::request::login_request::LoginRequest;
 use crate::usecase::auth_usecase::AuthUsecase;
 use crate::request::register_request::RegisterRequest;
+use crate::response::login_response::LoginResponse;
 
 pub struct AuthController {
     auth_usecase: AuthUsecase
@@ -17,19 +19,13 @@ impl AuthController {
         &self,
         web::Json(req): web::Json<RegisterRequest>
     ) -> impl Responder {
-        let result = self.auth_usecase.register(&req.name, &req.email, &req.password).await;
-        println!("register {}", result);
+        self.auth_usecase.register(&req.name, &req.email, &req.password).await;
         HttpResponse::Ok().json(req)
-        
-        // match result {
-        //     Ok(user) => HttpResponse::Ok().json(user),
-        //     Err(e) => HttpResponse::InternalServerError().json(e.to_string()),
-        // }
     }
 
-    pub fn login(&self, password: &str, password_hash: &str) -> Result<bool, argon2::password_hash::Error> {
-        let is_valid = self.auth_usecase.verify_password(password, password_hash);
+    pub async fn login(&self, web::Json(req): web::Json<LoginRequest>) -> impl Responder {
+        let token = self.auth_usecase.verify_password(&req.email, &req.password);
 
-        Ok(is_valid)
+        HttpResponse::Ok().json(LoginResponse{ token: token })
     }
 }

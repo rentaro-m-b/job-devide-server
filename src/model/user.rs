@@ -18,21 +18,6 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
-impl User {
-    pub fn new(name: &str, email: &str, password_hash: &str) -> Self {
-        let now = Utc::now().naive_utc();
-
-        User {
-            id: 0,
-            name: name.to_string(),
-            email: email.to_string(),
-            password_hash: password_hash.to_string(),
-            created_at: now,
-            updated_at: now
-        }
-    }
-}
-
 #[derive(Queryable, Insertable, Selectable, AsChangeset, Debug, Serialize, Deserialize)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
