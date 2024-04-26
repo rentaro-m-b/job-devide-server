@@ -1,4 +1,4 @@
-use actix_web::{web, Responder, HttpRequest};
+use actix_web::web;
 use crate::{
     controller::{
         auth_controller::AuthController,

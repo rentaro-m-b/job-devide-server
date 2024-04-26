@@ -8,8 +8,8 @@ use argon2::{
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use crate::{
-    model::user::{NewUser, User},
-    repository::user_repository::UserRepository, schema::users::password_hash
+    model::user::NewUser,
+    repository::user_repository::UserRepository
 };
 use dotenv::dotenv;
 use std::env;
@@ -40,7 +40,7 @@ impl AuthUsecase {
         // have not written error handling
         match hashed_result {
             Ok(hashed_password) => hashed_password,
-            Err(e) => {
+            Err(_) => {
                 "".to_string()
             }
         }
@@ -56,7 +56,7 @@ impl AuthUsecase {
         let argon2 = Argon2::default();
         let parsed_result = match PasswordHash::new(user_password_hash.as_str()) {
             Ok(parsed_hash) => argon2.verify_password(password.as_bytes(), &parsed_hash),
-            Err(e) => {
+            Err(_) => {
                 return "".to_string()
             }
         };
