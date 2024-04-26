@@ -84,7 +84,7 @@ impl AuthUsecase {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Claims {
+pub struct Claims {
     exp: usize,
     iat: usize,
     email: String

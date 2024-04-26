@@ -3,7 +3,7 @@ use crate::{
     controller::{
         auth_controller::AuthController,
         sample_controller::SampleController
-    }, db::get_connection_pool, middleware::auth_middleware::AuthMiddleware, repository::user_repository::UserRepository, request::{login_request::LoginRequest, register_request::RegisterRequest}, usecase::auth_usecase::AuthUsecase
+    }, db::get_connection_pool, middleware::{auth_middleware::AuthMiddleware, sample_middleware::SayHi}, repository::user_repository::UserRepository, request::{login_request::LoginRequest, register_request::RegisterRequest}, usecase::auth_usecase::AuthUsecase
 };
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -13,6 +13,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     let auth_controller = web::Data::new(AuthController::new(auth_usecase));
     cfg.service(
         web::scope("/sample")
+            .wrap(SayHi)
             .wrap(AuthMiddleware)
             .route("", web::get().to(SampleController::sample)),
     )

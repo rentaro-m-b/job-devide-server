@@ -946,6 +946,7 @@ dependencies = [
  "diesel",
  "dotenv",
  "futures",
+ "futures-util",
  "jsonwebtoken",
  "serde",
 ]
