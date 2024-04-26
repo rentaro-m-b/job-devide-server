@@ -4,6 +4,8 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use crate::usecase::auth_usecase::Claims;
+use dotenv::dotenv;
+use std::env;
 
 pub struct AuthMiddlewareService<S> {
     pub(crate) service: S
@@ -26,6 +28,7 @@ where
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let token = req.headers().get("Authorization").map(|v| v.to_str().unwrap_or(""));
         println!("Token: {:?}", token);
+        
         if let Ok(claims) = validate_token(token.unwrap_or("")) {
             println!("Claims: {:?}", claims);
         } else {
@@ -40,10 +43,13 @@ where
 }
 
 pub fn validate_token(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
+    dotenv().ok();
+
     let token = token.trim_start_matches("Bearer ");
+    let secret = &env::var("SECRET_KEY").expect("SECRET_KEY must be set");
     decode::<Claims>(
         token,
-        &DecodingKey::from_secret("your_secret_key".as_ref()),
+        &DecodingKey::from_secret(secret.as_ref()),
         &Validation::default()
     )
     .map(|data| data.claims)

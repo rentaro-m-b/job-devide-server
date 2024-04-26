@@ -11,6 +11,8 @@ use crate::{
     model::user::{NewUser, User},
     repository::user_repository::UserRepository, schema::users::password_hash
 };
+use dotenv::dotenv;
+use std::env;
 
 pub struct AuthUsecase {
     user_repository: UserRepository
@@ -71,6 +73,8 @@ impl AuthUsecase {
     }
 
     fn create_token(&self, user_email: &str) -> Result<String, jsonwebtoken::errors::Error> {
+        dotenv().ok();
+
         let iat = chrono::Utc::now();
         let exp = iat + chrono::Duration::days(2);
         let claims = Claims {
@@ -78,8 +82,9 @@ impl AuthUsecase {
             exp: exp.timestamp() as usize,
             email: user_email.to_owned()
         };
+        let secret = &env::var("SECRET_KEY").expect("SECRET_KEY must be set");
 
-        encode(&Header::default(), &claims, &EncodingKey::from_secret("secret".as_ref()))
+        encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_ref()))
     }
 }
 
