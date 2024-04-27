@@ -1,4 +1,4 @@
-use actix_web::{dev::{Service, ServiceRequest, ServiceResponse}, Error};
+use actix_web::{dev::{Service, ServiceRequest, ServiceResponse}, error::ErrorUnauthorized, error::Error as AWError, HttpResponse, http::Error as HError};
 use futures::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -6,6 +6,7 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use crate::usecase::auth_usecase::Claims;
 use dotenv::dotenv;
 use std::env;
+use actix_web::error::ResponseError;
 
 pub struct AuthMiddlewareService<S> {
     pub(crate) service: S
@@ -13,12 +14,12 @@ pub struct AuthMiddlewareService<S> {
 
 impl<S, B> Service<ServiceRequest> for AuthMiddlewareService<S>
 where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error> + 'static,
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = AWError> + 'static,
     S::Future: 'static,
     B: 'static
 {
     type Response = ServiceResponse<B>;
-    type Error = Error;
+    type Error = AWError;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
 
     fn poll_ready(&self, ctx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -33,10 +34,15 @@ where
             println!("Claims: {:?}", claims);
         } else {
             println!("Invalid token");
+            return Box::pin(async move {
+                Err(
+                    ErrorUnauthorized("Unauthorized")
+                )
+            })
         }
         let fut = self.service.call(req);
         Box::pin(async move {
-            let res = fut.await?;
+            let res: ServiceResponse<B> = fut.await?;
             Ok(res)
         })
     }
