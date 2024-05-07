@@ -7,6 +7,7 @@ use crate::usecase::auth_usecase::Claims;
 use dotenv::dotenv;
 use std::env;
 use actix_web::error::ResponseError;
+use actix_web::HttpMessage;
 
 pub struct AuthMiddlewareService<S> {
     pub(crate) service: S
@@ -32,6 +33,7 @@ where
         
         if let Ok(claims) = validate_token(token.unwrap_or("")) {
             println!("Claims: {:?}", claims);
+            req.extensions_mut().insert(claims.user_id);
         } else {
             println!("Invalid token");
             return Box::pin(async move {

@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use crate::db::DbPool;
-use crate::model::user::{NewUser, User};
+use crate::model::user::{NewUser, User, UpdateUser};
 use crate::schema::users;
 use crate::schema::users::dsl::*;
 
@@ -26,5 +26,15 @@ impl UserRepository {
         users.filter(email.eq(user_email))
             .first::<User>(&mut conn)
             .ok()
+    }
+
+    pub fn update_user(&self, user: &UpdateUser, user_id: i32) {
+        let mut conn = self.pool.get().expect("failde to get db connection from pool");
+        println!("update_user");
+
+        let target = users.filter(id.eq(user_id));
+        let _ = diesel::update(target)
+            .set((name.eq(user.name.as_str()), email.eq(user.email.as_str())))
+            .execute(&mut conn);
     }
 }

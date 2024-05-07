@@ -1,9 +1,9 @@
-use actix_web::web;
+use actix_web::{web::{self, Payload}, HttpRequest};
 use crate::{
     controller::{
         auth_controller::AuthController,
         sample_controller::SampleController
-    }, db::get_connection_pool, middleware::{auth_middleware::AuthMiddleware, sample_middleware::SayHi}, repository::user_repository::UserRepository, request::{login_request::LoginRequest, register_request::RegisterRequest}, usecase::auth_usecase::AuthUsecase
+    }, db::get_connection_pool, middleware::{auth_middleware::AuthMiddleware, sample_middleware::SayHi}, repository::user_repository::UserRepository, request::{login_request::LoginRequest, register_request::RegisterRequest, update_user_request::UpdateUserRequest}, usecase::auth_usecase::AuthUsecase
 };
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -26,5 +26,14 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("login", web::post().to(|data: web::Data<AuthController>, req: web::Json<LoginRequest>| async move {
                 data.login(req).await
             }))
+            .service(
+                // emailが重複できてしまうのはまずい
+                web::scope("update")
+                .wrap(AuthMiddleware)
+                .route("", web::post().to(|data: web::Data<AuthController>, req: HttpRequest, payload: web::Json<UpdateUserRequest>| async move {
+                    data.update_user(req, payload).await
+                }))
+            )
+            
     );
 }

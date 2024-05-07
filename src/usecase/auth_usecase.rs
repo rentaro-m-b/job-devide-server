@@ -8,7 +8,7 @@ use argon2::{
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use crate::{
-    model::user::NewUser,
+    model::user::{NewUser, UpdateUser},
     repository::user_repository::UserRepository
 };
 use dotenv::dotenv;
@@ -31,6 +31,11 @@ impl AuthUsecase {
         self.user_repository.create_user(&new_user);
     }
 
+    pub async fn update(&self, name: &str, email: &str, user_id: i32) {
+        let update_user = UpdateUser::new(name, email);
+        self.user_repository.update_user(&update_user, user_id);
+    }
+
     fn hash_password(&self, password: &str) -> String {
         let argon2 = Argon2::default();
         let salt = SaltString::generate(&mut OsRng);
@@ -48,10 +53,15 @@ impl AuthUsecase {
 
     pub fn verify_password(&self, user_email: &str, password: &str) -> String {
         let option_user = self.user_repository.find_user_by_email(user_email);
-        let user_password_hash = match option_user {
-            Some(user) => user.password_hash,
+        let user_password_hash;
+        let user_id;
+        match option_user {
+            Some(user) => {
+                user_password_hash = user.password_hash;
+                user_id = user.id;
+            },
             None => return "".to_string()
-        };
+        }
 
         let argon2 = Argon2::default();
         let parsed_result = match PasswordHash::new(user_password_hash.as_str()) {
@@ -62,7 +72,7 @@ impl AuthUsecase {
         };
 
         let create_token_result = match parsed_result {
-            Ok(_) => self.create_token(user_email),
+            Ok(_) => self.create_token(user_id),
             Err(_) => return "".to_string()
         };
 
@@ -72,7 +82,7 @@ impl AuthUsecase {
         }
     }
 
-    fn create_token(&self, user_email: &str) -> Result<String, jsonwebtoken::errors::Error> {
+    fn create_token(&self, user_id: i32) -> Result<String, jsonwebtoken::errors::Error> {
         dotenv().ok();
 
         let iat = chrono::Utc::now();
@@ -80,7 +90,7 @@ impl AuthUsecase {
         let claims = Claims {
             iat: iat.timestamp() as usize,
             exp: exp.timestamp() as usize,
-            email: user_email.to_owned()
+            user_id: user_id
         };
         let secret = &env::var("SECRET_KEY").expect("SECRET_KEY must be set");
 
@@ -92,5 +102,5 @@ impl AuthUsecase {
 pub struct Claims {
     exp: usize,
     iat: usize,
-    email: String
+    pub user_id: i32
 }

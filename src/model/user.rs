@@ -42,3 +42,21 @@ impl NewUser {
         }
     }
 }
+
+pub struct UpdateUser {
+    pub name: String,
+    pub email: String,
+    pub updated_at: NaiveDateTime,
+}
+
+impl UpdateUser {
+    pub fn new(name: &str, email: &str) -> Self {
+        let now = Utc::now().naive_utc();
+
+        UpdateUser {
+            name: name.to_string(),
+            email: email.to_string(),
+            updated_at: now
+        }
+    }
+}
