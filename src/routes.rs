@@ -27,13 +27,14 @@ pub fn config(cfg: &mut web::ServiceConfig) {
                 data.login(req).await
             }))
             .service(
-                // emailが重複できてしまうのはまずい
-                web::scope("update")
+                web::scope("")
                 .wrap(AuthMiddleware)
-                .route("", web::post().to(|data: web::Data<AuthController>, req: HttpRequest, payload: web::Json<UpdateUserRequest>| async move {
+                .route("update", web::put().to(|data: web::Data<AuthController>, req: HttpRequest, payload: web::Json<UpdateUserRequest>| async move {
                     data.update_user(req, payload).await
                 }))
+                .route("delete", web::delete().to(|data: web::Data<AuthController>, req: HttpRequest| async move {
+                    data.delete_user(req).await
+                }))
             )
-            
     );
 }

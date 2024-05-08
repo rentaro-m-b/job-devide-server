@@ -34,10 +34,22 @@ impl AuthController {
     pub async fn update_user(&self, req: HttpRequest, web::Json(payload): web::Json<UpdateUserRequest>) -> impl Responder {
         let message;
         if let Some(user_id) = req.extensions().get::<i32>() {
+            message = "Token found";
             self.auth_usecase.update(&payload.name, &payload.email, *user_id).await;
-            message = "Update done";
         } else {
-            message = "Can't update";
+            message = "Token not found";
+        }
+
+        HttpResponse::Ok().json(UpdateUserResponse{ message: message.to_string() })
+    }
+
+    pub async fn delete_user(&self, req: HttpRequest) -> impl Responder {
+        let message;
+        if let Some(user_id) = req.extensions().get::<i32>() {
+            message = "Token found";
+            self.auth_usecase.delete(*user_id).await;
+        } else {
+            message = "Token not found";
         }
 
         HttpResponse::Ok().json(UpdateUserResponse{ message: message.to_string() })

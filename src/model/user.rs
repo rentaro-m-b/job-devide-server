@@ -60,3 +60,21 @@ impl UpdateUser {
         }
     }
 }
+
+pub struct DeleteUser {
+    pub name: String,
+    pub email: String,
+    pub updated_at: NaiveDateTime,
+}
+
+impl DeleteUser {
+    pub fn new(name: &str, email: &str) -> Self {
+        let now = Utc::now().naive_utc();
+
+        DeleteUser {
+            name: name.to_string(),
+            email: email.to_string(),
+            updated_at: now
+        }
+    }
+}

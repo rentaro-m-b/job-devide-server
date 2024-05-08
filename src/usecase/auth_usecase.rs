@@ -36,6 +36,10 @@ impl AuthUsecase {
         self.user_repository.update_user(&update_user, user_id);
     }
 
+    pub async fn delete(&self, user_id: i32) {
+        self.user_repository.delete_user(user_id);
+    }
+
     fn hash_password(&self, password: &str) -> String {
         let argon2 = Argon2::default();
         let salt = SaltString::generate(&mut OsRng);
