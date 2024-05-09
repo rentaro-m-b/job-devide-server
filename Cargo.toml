@@ -17,4 +17,6 @@ dotenv = "0.15.0"
 futures = "0.3.30"
 futures-util = "0.3.30"
 jsonwebtoken = "9.3.0"
+llm = "0.1.1"
+rand = "0.8.5"
 serde = { version = "1.0.197", features = ["derive"] }

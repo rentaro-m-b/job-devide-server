@@ -1,9 +1,8 @@
 use actix_web::{web::{self, Payload}, HttpRequest};
 use crate::{
     controller::{
-        auth_controller::AuthController,
-        sample_controller::SampleController
-    }, db::get_connection_pool, middleware::{auth_middleware::AuthMiddleware, sample_middleware::SayHi}, repository::user_repository::UserRepository, request::{login_request::LoginRequest, register_request::RegisterRequest, update_user_request::UpdateUserRequest}, usecase::auth_usecase::AuthUsecase
+        auth_controller::AuthController, llm_controller::{self, LlmController}, sample_controller::SampleController
+    }, db::get_connection_pool, middleware::{auth_middleware::AuthMiddleware, sample_middleware::SayHi}, repository::user_repository::UserRepository, request::{login_request::LoginRequest, register_request::RegisterRequest, update_user_request::UpdateUserRequest}, usecase::{auth_usecase::AuthUsecase, llm_usecase::{self, LlmUsecase}}
 };
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -11,6 +10,8 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     let user_repository = UserRepository::new(pool.clone());
     let auth_usecase = AuthUsecase::new(user_repository);
     let auth_controller = web::Data::new(AuthController::new(auth_usecase));
+    let llm_usecase = LlmUsecase{};
+    let llm_controller = web::Data::new(LlmController::new(llm_usecase));
     cfg.service(
         web::scope("/sample")
             .wrap(SayHi)
@@ -36,5 +37,11 @@ pub fn config(cfg: &mut web::ServiceConfig) {
                     data.delete_user(req).await
                 }))
             )
+    ).service(
+        web::scope("/llm")
+            .app_data(llm_controller.clone())
+            .route("generate", web::post().to(|data: web::Data<LlmController>, req: HttpRequest| async move {
+                data.doc_generate(req).await
+            }))
     );
 }
